@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#1d3f8a">
+<meta name="theme-color" content="#8f1420">
 <title>Mando móvil · IES SANJE</title>
 <style>
-:root{ --blue:#1d3f8a; --yellow:#f5c518; --red:#e0342c; --green:#2fb35f; --ink:#fff6e0; --muted:#b9b4a6; --bg:#101318; --panel:#1b1f27;
+:root{ --accent:#d91f1a; --yellow:#f5c518; --red:#e0342c; --green:#2fb35f; --ink:#fff6e0; --muted:#b9b4a6; --bg:#101318; --panel:#1b1f27;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); color-scheme:dark; }
 *,*::before,*::after{ box-sizing:inherit; }
 html,body{ height:100%; margin:0; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; overflow:hidden; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:none; }
 .hidden{ display:none !important; }
 /* Configuración */
 #setup{ height:100%; overflow:auto; touch-action:auto; padding:22px 20px 30px; max-width:520px; margin:0 auto; }
-.badge{ display:inline-block; background:var(--yellow); color:var(--blue); font-weight:800; letter-spacing:.08em; padding:3px 9px; border-radius:3px; font-size:13px; }
+.badge{ display:inline-block; background:var(--accent); color:#fff; font-weight:800; letter-spacing:.08em; padding:3px 9px; border-radius:3px; font-size:13px; }
 h1{ font-size:30px; margin:10px 0 6px; line-height:1.1; }
 p{ color:var(--muted); margin:0 0 16px; line-height:1.45; }
 label{ display:block; font-size:14px; color:var(--muted); margin:12px 0 4px; }
 input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:0; background:#fff6e0; color:#1c1c1c; -webkit-user-select:text; user-select:text; }
-.go{ width:100%; margin-top:20px; font-size:19px; font-weight:800; padding:15px; border:0; border-radius:10px; background:var(--yellow); color:#1c1c1c; box-shadow:0 4px 0 #a88407; }
-.go:active{ transform:translateY(3px); box-shadow:0 1px 0 #a88407; }
+.go{ width:100%; margin-top:20px; font-size:19px; font-weight:800; padding:15px; border:0; border-radius:10px; background:var(--accent); color:#fff; box-shadow:0 4px 0 #8f1420; }
+.go:active{ transform:translateY(3px); box-shadow:0 1px 0 #8f1420; }
 .msg{ margin-top:14px; font-size:15px; min-height:1.3em; }
 .tip{ margin-top:18px; font-size:14px; background:var(--panel); border-radius:8px; padding:10px 12px; color:var(--muted); line-height:1.45; }
 /* Mando */
@@ -30,14 +30,14 @@ input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:
 .dot.on{ background:var(--green); box-shadow:0 0 8px var(--green); }
 #noGame{ position:fixed; left:50%; top:72px; transform:translateX(-50%); max-width:90%; padding:8px 14px; border-radius:8px; background:var(--yellow); color:#1c1c1c; font-size:14px; font-weight:800; text-align:center; pointer-events:none; }
 .sbtn{ font-size:14px; font-weight:800; border:0; border-radius:8px; padding:10px 12px; background:var(--panel); color:var(--ink); }
-.sbtn.start{ background:var(--yellow); color:#1c1c1c; }
+.sbtn.start{ background:var(--accent); color:#fff; }
 .sbtn.hand.active{ background:var(--red); }
 .spd{ font-weight:800; font-size:22px; font-variant-numeric:tabular-nums; min-width:88px; text-align:right; }
 .spd small{ font-size:12px; color:var(--muted); font-weight:600; }
 .wheelbox{ flex:1; display:flex; align-items:center; justify-content:center; gap:10px; min-width:0; }
 .wheel{ width:46px; height:46px; transition:transform .05s linear; }
 .steerbar{ flex:1; max-width:260px; height:10px; background:var(--panel); border-radius:5px; position:relative; }
-.steerbar i{ position:absolute; top:-3px; width:16px; height:16px; margin-left:-8px; border-radius:50%; background:var(--yellow); left:50%; }
+.steerbar i{ position:absolute; top:-3px; width:16px; height:16px; margin-left:-8px; border-radius:50%; background:var(--accent); left:50%; }
 .zones{ display:grid; grid-template-columns:1fr 1.3fr; gap:12px; min-height:0; }
 .zone{ position:relative; border-radius:18px; overflow:hidden; display:flex; align-items:flex-end; justify-content:center; padding-bottom:14px; font-weight:900; font-size:26px; letter-spacing:.06em; }
 .zone.brake{ background:#3a1614; color:#ffb3ad; }

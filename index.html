@@ -9,14 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Saira+Condensed:wght@600;800&family=Barlow:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0b0c0f;
-  --ink:#f4f5f7;
-  --muted:#9aa1ab;
+  --bg:#0f090a;
+  --ink:#f7f3f3;
+  --muted:#ad9d9e;
   --line:rgba(255,255,255,.13);
-  --panel:rgba(9,10,13,.74);
-  --panel-solid:#101216;
-  --yellow:#f5c518;
-  --blue:#1d3f8a;
+  --panel:rgba(16,9,10,.76);
+  --panel-solid:#160d0e;
+  --yellow:#f4c518;
+  --accent:#d91f1a;
+  --accent-text:#ff5a4f;
+  --blue:#8f1420;
   --red:#ff3b30;
   --green:#2fd16b;
   --purple:#b860ff;
@@ -34,7 +36,7 @@ body{ font-family:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif; color:
 body.attract .hud, body.attract .cluster, body.attract .warn{ opacity:0; visibility:hidden; }
 .tower{ width:232px; background:var(--panel); border-radius:3px; overflow:hidden; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); font-variant-numeric:tabular-nums; }
 .tower header{ display:flex; align-items:center; gap:8px; padding:7px 10px; background:rgba(255,255,255,.07); }
-.swatch{ width:6px; height:18px; border-radius:1px; flex:none; background:var(--yellow); }
+.swatch{ width:6px; height:18px; border-radius:1px; flex:none; background:var(--accent-text); }
 .driver{ font:800 19px/1 var(--display); letter-spacing:.03em; text-transform:uppercase; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .turn{ font-size:12px; color:var(--muted); white-space:nowrap; }
 .turn b{ color:var(--ink); }
@@ -53,12 +55,12 @@ body.attract .hud, body.attract .cluster, body.attract .warn{ opacity:0; visibil
 .tower footer{ display:flex; justify-content:space-between; gap:10px; padding:6px 10px; border-top:1px solid var(--line); font-size:13px; color:var(--muted); }
 .tower footer span{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .tower footer b{ color:var(--ink); }
-.sec{ padding:5px 10px 6px; font:600 15px/1 var(--display); letter-spacing:.08em; text-transform:uppercase; color:var(--yellow); background:rgba(0,0,0,.28); }
+.sec{ padding:5px 10px 6px; font:600 15px/1 var(--display); letter-spacing:.08em; text-transform:uppercase; color:var(--accent-text); background:rgba(0,0,0,.28); }
 .right{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 #mini{ background:var(--panel); border-radius:3px; width:150px; height:190px; }
 .status{ display:flex; gap:6px; }
 #mute,#camBtn{ pointer-events:auto; font:700 12px "Barlow",sans-serif; background:var(--panel); color:var(--ink); border:0; border-radius:3px; padding:5px 8px; cursor:pointer; white-space:nowrap; }
-#mute:focus-visible,#camBtn:focus-visible{ outline:2px solid var(--yellow); }
+#mute:focus-visible,#camBtn:focus-visible{ outline:2px solid var(--accent-text); }
 .chip{ font:700 12px "Barlow",sans-serif; background:var(--panel); border-radius:3px; padding:5px 8px; color:var(--muted); }
 
 /* Panel de instrumentos */
@@ -70,7 +72,7 @@ body.attract .hud, body.attract .cluster, body.attract .warn{ opacity:0; visibil
 .revs i.on.r{ background:var(--red); box-shadow:0 0 8px var(--red); }
 .cluster.shift .revs i.on{ background:#5aa2ff; box-shadow:0 0 10px #5aa2ff; }
 .c-body{ display:flex; align-items:flex-end; gap:12px; }
-.gear{ width:58px; font:800 72px/.82 var(--display); text-align:center; color:var(--yellow); }
+.gear{ width:58px; font:800 72px/.82 var(--display); text-align:center; color:var(--accent-text); }
 .spd{ flex:1; display:flex; align-items:baseline; justify-content:flex-end; gap:5px; }
 .spd b{ font:800 62px/.82 var(--display); }
 .spd span{ font-size:13px; font-weight:700; color:var(--muted); }
@@ -81,7 +83,7 @@ body.attract .hud, body.attract .cluster, body.attract .warn{ opacity:0; visibil
 
 .warn{ position:fixed; left:50%; top:calc(env(safe-area-inset-top,0px) + 14px); transform:translateX(-50%); padding:6px 14px; background:var(--yellow); color:#111; font:800 18px/1 var(--display); letter-spacing:.08em; text-transform:uppercase; border-radius:2px; pointer-events:none; opacity:0; transition:opacity .15s; white-space:nowrap; }
 .warn.show{ opacity:1; }
-.toast{ position:fixed; left:50%; top:26%; transform:translate(-50%,-50%); padding:8px 22px; background:var(--panel); border-bottom:3px solid var(--yellow); font:800 clamp(26px,5vw,46px)/1.1 var(--display); letter-spacing:.03em; text-transform:uppercase; pointer-events:none; opacity:0; transition:opacity .25s; white-space:nowrap; }
+.toast{ position:fixed; left:50%; top:26%; transform:translate(-50%,-50%); padding:8px 22px; background:var(--panel); border-bottom:3px solid var(--accent); font:800 clamp(26px,5vw,46px)/1.1 var(--display); letter-spacing:.03em; text-transform:uppercase; pointer-events:none; opacity:0; transition:opacity .25s; white-space:nowrap; }
 .toast.show{ opacity:1; }
 
 /* Semáforo de salida */
@@ -94,31 +96,31 @@ body.attract .hud, body.attract .cluster, body.attract .warn{ opacity:0; visibil
 /* ---------- Pantallas ---------- */
 .overlay{ position:fixed; inset:0; display:grid; place-items:center start; padding:20px clamp(16px,6vw,84px); overflow:auto; touch-action:pan-y; background:linear-gradient(90deg,rgba(6,7,9,.86),rgba(6,7,9,.42) 58%,rgba(6,7,9,.08)); }
 .overlay.hidden{ display:none; }
-.card{ width:100%; max-width:470px; padding:24px 26px; background:rgba(14,16,20,.9); border-top:3px solid var(--yellow); border-radius:3px; }
+.card{ width:100%; max-width:470px; padding:24px 26px; background:rgba(22,12,13,.92); border-top:3px solid var(--accent); border-radius:3px; }
 .card h1{ font:800 clamp(38px,8vw,58px)/.95 var(--display); letter-spacing:.005em; text-transform:uppercase; margin:0 0 10px; }
 .card p{ margin:0 0 16px; color:var(--muted); font-size:16px; line-height:1.4; }
-.badge{ display:inline-block; font:800 15px/1 var(--display); letter-spacing:.14em; color:var(--yellow); margin-bottom:10px; }
+.badge{ display:inline-block; font:800 15px/1 var(--display); letter-spacing:.14em; color:var(--accent-text); margin-bottom:10px; }
 .players{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:16px; counter-reset:slot; }
 .players label{ display:flex; align-items:center; gap:7px; padding:0 9px; background:rgba(255,255,255,.06); border-radius:2px; min-width:0; counter-increment:slot; }
 .players label::before{ content:counter(slot); font:800 18px/1 var(--display); color:var(--muted); }
 .players input{ flex:1; font:700 15px "Barlow",sans-serif; padding:9px 0; border:0; background:transparent; color:var(--ink); min-width:0; }
-.players input:focus-visible{ outline:0; box-shadow:inset 0 -2px 0 var(--yellow); }
+.players input:focus-visible{ outline:0; box-shadow:inset 0 -2px 0 var(--accent-text); }
 .dot{ width:12px; height:12px; border-radius:50%; flex:none; }
 .keys{ display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin-bottom:16px; font-size:14px; align-items:center; color:var(--muted); }
-kbd{ font:700 12px "Barlow",sans-serif; background:#262a31; color:var(--ink); border-radius:2px; padding:2px 7px; border-bottom:2px solid #000; white-space:nowrap; }
-button.start{ font:800 23px/1 var(--display); letter-spacing:.06em; text-transform:uppercase; background:var(--yellow); color:#111; border:0; border-radius:2px; padding:14px 22px; cursor:pointer; width:100%; transition:background .15s; }
-button.start:hover{ background:#ffd83d; }
+kbd{ font:700 12px "Barlow",sans-serif; background:#322527; color:var(--ink); border-radius:2px; padding:2px 7px; border-bottom:2px solid #000; white-space:nowrap; }
+button.start{ font:800 23px/1 var(--display); letter-spacing:.06em; text-transform:uppercase; background:var(--accent); color:#fff; border:0; border-radius:2px; padding:14px 22px; cursor:pointer; width:100%; transition:background .15s; }
+button.start:hover{ background:#ee2c26; }
 button.start:active{ transform:translateY(1px); }
 button.start:focus-visible, button.ghost:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
 button.ghost{ font:700 15px "Barlow",sans-serif; background:transparent; color:var(--ink); border:1px solid var(--line); border-radius:2px; padding:10px; cursor:pointer; }
 .btns{ display:grid; gap:8px; }
 .turnName{ display:flex; align-items:center; gap:14px; }
 .turnName .dot{ width:20px; height:20px; }
-#turnNum{ font:800 16px/1 var(--display); letter-spacing:.12em; text-transform:uppercase; color:var(--yellow); margin-bottom:10px; }
+#turnNum{ font:800 16px/1 var(--display); letter-spacing:.12em; text-transform:uppercase; color:var(--accent-text); margin-bottom:10px; }
 table.res{ width:100%; border-collapse:collapse; margin:6px 0 20px; font-size:17px; font-weight:700; font-variant-numeric:tabular-nums; }
 table.res td{ padding:9px 6px; border-bottom:1px solid var(--line); }
 table.res td.pos{ font:800 22px/1 var(--display); width:30px; color:var(--muted); }
-table.res tr.win td{ color:var(--yellow); }
+table.res tr.win td{ color:var(--accent-text); }
 table.res td.t{ text-align:right; }
 details.mq{ margin:0 0 16px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:9px 0; }
 details.mq summary{ cursor:pointer; font-weight:700; font-size:14px; }
@@ -135,7 +137,7 @@ details.mq button{ margin-top:10px; width:100%; }
 .touch{ position:fixed; left:0; right:0; bottom:calc(env(safe-area-inset-bottom,0px) + 14px); display:none; justify-content:space-between; padding:0 14px; pointer-events:none; }
 .touch .grp{ display:flex; gap:12px; pointer-events:auto; }
 .touch button{ width:72px; height:72px; border-radius:50%; border:1px solid var(--line); background:rgba(9,10,13,.45); color:var(--ink); font-size:24px; touch-action:none; }
-.touch button.active{ background:rgba(245,197,24,.7); }
+.touch button.active{ background:rgba(217,31,26,.75); }
 @media (pointer:coarse){
   .touch{ display:flex; }
   body.attract .touch{ display:none; }
@@ -419,7 +421,7 @@ const railTex = canvasTex(64,256,(g,w,h)=>{
   g.clearRect(0,0,w,h);
   g.fillStyle='#6a7076'; g.fillRect(0,h*.46,w,h*.08);
   const from=w*.42, b=g.createLinearGradient(from,0,w,0);
-  b.addColorStop(0,'#274f8e'); b.addColorStop(.3,'#3a69ad'); b.addColorStop(.36,'#c9ced3'); b.addColorStop(.55,'#8e959c'); b.addColorStop(.78,'#e4e7ea'); b.addColorStop(1,'#858c93');
+  b.addColorStop(0,'#7a1019'); b.addColorStop(.3,'#a81c22'); b.addColorStop(.36,'#c9ced3'); b.addColorStop(.55,'#8e959c'); b.addColorStop(.78,'#e4e7ea'); b.addColorStop(1,'#858c93');
   g.fillStyle=b; g.fillRect(from,0,w-from,h);
   g.fillStyle='rgba(30,32,36,.55)'; g.fillRect(from,h*.495,w-from,h*.02);
 });
@@ -444,14 +446,14 @@ function bannerMat(text, bg, fg, w=512, h=96, rep=1){
   if(rep>1){ t.wrapS=THREE.RepeatWrapping; t.repeat.set(rep,1); }
   return new THREE.MeshLambertMaterial({map:t});
 }
-const sanjeBlue = bannerMat('IES SANJE','#1d3f8a','#ffffff');
-const sanjeYellow = bannerMat('IES SANJE','#f5c518','#1d3f8a');
+const sanjeBlue = bannerMat('IES SANJE','#8f1420','#ffffff');
+const sanjeYellow = bannerMat('IES SANJE','#d91f1a','#ffffff');
 // Pórtico de salida
 framed(new THREE.Mesh(new THREE.BoxGeometry(0.6,7,0.6), lam(0x2b2d33)), 0, HALF+3, 3.5);
 framed(new THREE.Mesh(new THREE.BoxGeometry(0.6,7,0.6), lam(0x2b2d33)), 0, -HALF-3, 3.5);
-framed(new THREE.Mesh(new THREE.BoxGeometry(2*HALF+7,1.4,0.8), bannerMat('IES SANJE · LE MANS','#15161a','#f5c518',1024,96)), 0, 0, 7.2);
+framed(new THREE.Mesh(new THREE.BoxGeometry(2*HALF+7,1.4,0.8), bannerMat('IES SANJE · LE MANS','#15161a','#d91f1a',1024,96)), 0, 0, 7.2);
 // Tribunas y boxes en la recta
-const crowdTex = canvasTex(256,64,(g,w,h)=>{ g.fillStyle='#555'; g.fillRect(0,0,w,h); const cols=['#e0342c','#f5c518','#2f7fe0','#f2f2f2','#3a3a3a','#e98a2a','#7ac04a']; for(let x=0;x<w;x+=4) for(let y=0;y<h;y+=5){ g.fillStyle=cols[Math.random()*cols.length|0]; g.fillRect(x,y,3,4);} });
+const crowdTex = canvasTex(256,64,(g,w,h)=>{ g.fillStyle='#555'; g.fillRect(0,0,w,h); const cols=['#e0342c','#f4c518','#2f7fe0','#f2f2f2','#3a3a3a','#e98a2a','#7ac04a']; for(let x=0;x<w;x+=4) for(let y=0;y<h;y+=5){ g.fillStyle=cols[Math.random()*cols.length|0]; g.fillRect(x,y,3,4);} });
 crowdTex.wrapS=THREE.RepeatWrapping; crowdTex.repeat.set(3,1);
 const crowdMat = new THREE.MeshLambertMaterial({map:crowdTex});
 const pitTex = canvasTex(256,64,(g,w,h)=>{ g.fillStyle='#d9dcde'; g.fillRect(0,0,w,h); g.fillStyle='#2a3a4a'; g.fillRect(0,14,w,18); g.fillStyle='#8a9097'; for(let x=0;x<w;x+=32) g.fillRect(x,14,3,18); g.fillStyle='#6b7178'; g.fillRect(0,44,w,20); });
@@ -472,7 +474,7 @@ for(let k=-90; k<=70; k+=10){
 {
   const bi = nearestGlobal(600*SCALE, -1260*SCALE).i;
   framed(new THREE.Mesh(new THREE.BoxGeometry(2*WALL+8, 1.6, 5), lam(0xe8e4dc)), bi, 0, 7.2);
-  framed(new THREE.Mesh(new THREE.BoxGeometry(2*WALL+8, 1.6, 5.3), bannerMat('IES SANJE','#1d3f8a','#ffffff',1024,96)), bi, 0, 7.2);
+  framed(new THREE.Mesh(new THREE.BoxGeometry(2*WALL+8, 1.6, 5.3), bannerMat('IES SANJE','#8f1420','#ffffff',1024,96)), bi, 0, 7.2);
   for(const s of [1,-1]) framed(new THREE.Mesh(new THREE.BoxGeometry(1.4, 7, 4), lam(0xcfcac0)), bi, s*(WALL+3), 3.5);
 }
 // Carteles de frenada antes de las curvas lentas
@@ -488,7 +490,7 @@ for(const name of ['Mulsanne','Arnage','Indianápolis','Primera chicane','Segund
 // Vallas por todo el circuito: electrónica, telecomunicaciones e IES SANJE
 // Con un número impar de entradas, cada nombre cambia de color en la siguiente vuelta del ciclo
 const BOARD_NAMES = ['DIODO','TRANSISTOR','RESISTENCIA','IES SANJE','CONDENSADOR','ANTENA','FIBRA ÓPTICA','IES SANJE','BOBINA','ROUTER','MICROCONTROLADOR','IES SANJE','LED','OSCILOSCOPIO','MÓDEM'];
-const boardMats = BOARD_NAMES.flatMap(t=>[bannerMat(t,'#1d3f8a','#ffffff',512,154), bannerMat(t,'#f5c518','#1d3f8a',512,154)]);
+const boardMats = BOARD_NAMES.flatMap(t=>[bannerMat(t,'#8f1420','#ffffff',512,154), bannerMat(t,'#d91f1a','#ffffff',512,154)]);
 for(let i=130, n=0; i<N-120; i+=Math.round(260/STEP), n++){
   const side = n%2 ? 1 : -1;
   const lat = side*(WALL+4);
@@ -591,9 +593,9 @@ for(const s of [1,-1]){
   tube(.02,[s*0.56,1.5,-0.46],[s*0.62,1.46,0.6]);               // barra de techo
 }
 tube(.02,[-0.56,1.5,-0.46],[0.56,1.5,-0.46]);
-{ const st2=new THREE.Mesh(new THREE.PlaneGeometry(.36,.2), new THREE.MeshBasicMaterial({map:canvasTex(256,144,(g,w,h)=>{ g.fillStyle='#101114'; g.fillRect(0,0,w,h); const lb=['IGN','START','PIT','LUZ','LLUVIA','RADIO']; lb.forEach((t,k)=>{ const x=44+(k%3)*84, y=44+(k/3|0)*66; g.fillStyle=k===1?'#e0342c':(k===0?'#f5c518':'#3a3d44'); g.beginPath(); g.arc(x,y,17,0,7); g.fill(); g.fillStyle='#cfd2d6'; g.font='bold 15px sans-serif'; g.textAlign='center'; g.fillText(t,x,y+32); }); })}));
+{ const st2=new THREE.Mesh(new THREE.PlaneGeometry(.36,.2), new THREE.MeshBasicMaterial({map:canvasTex(256,144,(g,w,h)=>{ g.fillStyle='#101114'; g.fillRect(0,0,w,h); const lb=['IGN','START','PIT','LUZ','LLUVIA','RADIO']; lb.forEach((t,k)=>{ const x=44+(k%3)*84, y=44+(k/3|0)*66; g.fillStyle=k===1?'#e0342c':(k===0?'#d91f1a':'#3a3d44'); g.beginPath(); g.arc(x,y,17,0,7); g.fill(); g.fillStyle='#cfd2d6'; g.font='bold 15px sans-serif'; g.textAlign='center'; g.fillText(t,x,y+32); }); })}));
   st2.rotation.x=-1.05; st2.position.set(0,0.5,-0.36); cockpit.add(st2); }
-{ const st=new THREE.Mesh(new THREE.PlaneGeometry(0.42,0.08), new THREE.MeshBasicMaterial({map:canvasTex(512,96,(g)=>{g.fillStyle='#1d3f8a';g.fillRect(0,0,512,96);g.fillStyle='#fff';g.font='bold 60px "Russo One",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('IES SANJE',256,50);})}));
+{ const st=new THREE.Mesh(new THREE.PlaneGeometry(0.42,0.08), new THREE.MeshBasicMaterial({map:canvasTex(512,96,(g)=>{g.fillStyle='#8f1420';g.fillRect(0,0,512,96);g.fillStyle='#fff';g.font='bold 60px "Russo One",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('IES SANJE',256,50);})}));
   st.rotation.x=-Math.PI/2; st.position.set(0.5,dashY(0.5,-0.86)+0.004,-0.86); cockpit.add(st); }
 const pillarMat = carbon;
 const mirrorMat = new THREE.MeshBasicMaterial({fog:false, map:canvasTex(64,32,(g,w,h)=>{ const c=g.createLinearGradient(0,0,0,h); c.addColorStop(0,'#9dc1de'); c.addColorStop(.52,'#d9e4e8'); c.addColorStop(.56,'#55684a'); c.addColorStop(.7,'#4a4c50'); c.addColorStop(1,'#3a3c40'); g.fillStyle=c; g.fillRect(0,0,w,h); })});
@@ -612,7 +614,7 @@ box(0.36,0.2,0.55,carbon,0,0.42,-0.15);                         // túnel centra
 tube(.007,[0.58,0.8,-1.42],[-0.34,0.86,-1.31],lam(0x08080a));   // limpiaparabrisas
 const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.2), new THREE.MeshBasicMaterial({color:0x9fc4e0, transparent:true, opacity:0.07, depthWrite:false}));
 glass.position.set(0,1.15,-0.95); glass.rotation.x = 0.95; cockpit.add(glass);
-{ const strip2=new THREE.Mesh(new THREE.PlaneGeometry(0.96,0.085), new THREE.MeshBasicMaterial({map:canvasTex(1024,128,(g,w,h)=>{ g.fillStyle='#10295f'; g.fillRect(0,0,w,h); g.fillStyle='#f5c518'; g.font='bold 74px "Russo One","Arial Black",sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('IES SANJE',w/2,h/2+3); }), transparent:true, opacity:.92, depthWrite:false, fog:false}));
+{ const strip2=new THREE.Mesh(new THREE.PlaneGeometry(0.96,0.085), new THREE.MeshBasicMaterial({map:canvasTex(1024,128,(g,w,h)=>{ g.fillStyle='#5c0d16'; g.fillRect(0,0,w,h); g.fillStyle='#ffffff'; g.font='bold 74px "Russo One","Arial Black",sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('IES SANJE',w/2,h/2+3); }), transparent:true, opacity:.92, depthWrite:false, fog:false}));
   strip2.position.set(0,0.545,0.002); glass.add(strip2); }
 // Volante
 const wheel = new THREE.Group(); wheel.position.set(0,0.8,-0.5); wheel.rotation.x = -0.32; cockpit.add(wheel);
@@ -733,7 +735,7 @@ const rimMat=new THREE.MeshLambertMaterial({map:canvasTex(128,128,(g,w,h)=>{
   g.strokeStyle='#d6d9de'; g.lineWidth=9; g.lineCap='round';
   for(let k=0;k<6;k++){ const a=k/6*6.283; g.beginPath(); g.moveTo(c,c); g.lineTo(c+Math.cos(a)*60,c+Math.sin(a)*60); g.stroke(); }
   g.lineWidth=7; g.beginPath(); g.arc(c,c,60,0,7); g.stroke();
-  g.fillStyle='#f5c518'; g.beginPath(); g.arc(c,c,10,0,7); g.fill();
+  g.fillStyle='#d91f1a'; g.beginPath(); g.arc(c,c,10,0,7); g.fill();
 })});
 const tyreMat=lam(0x101012), carWheels=[];
 for(const [x,z,front] of [[.82,AXLE_F,1],[-.82,AXLE_F,1],[.82,AXLE_R,0],[-.82,AXLE_R,0]]){
@@ -752,7 +754,7 @@ function drawDisplay(kmh, gear, rpmFrac){
   g.fillStyle='#1b2a1b'; g.fillRect(6,98,244,22);
   g.fillStyle = rpmFrac>0.9?'#ff4b3a':'#3cd66b'; g.fillRect(6,98,244*Math.min(1,rpmFrac),22);
   g.textBaseline='middle'; g.textAlign='center';
-  g.fillStyle='#f5c518'; g.font='bold 76px "Russo One",sans-serif'; g.fillText(gear===0?'N':String(gear),128,50);
+  g.fillStyle='#ff5a4f'; g.font='bold 76px "Russo One",sans-serif'; g.fillText(gear===0?'N':String(gear),128,50);
   g.fillStyle='#ffffff'; g.font='bold 40px "Russo One",sans-serif'; g.textAlign='left'; g.fillText(String(kmh),10,50);
   g.textAlign='right'; g.font='bold 20px "Barlow",sans-serif'; g.fillStyle='#9aa'; g.fillText('km/h',246,34);
   g.fillText('marcha',246,66);
@@ -861,7 +863,8 @@ function physics(dt){
 }
 
 /* =========== Turnos =========== */
-const COLORS=[{c:'#f5c518',d:'#d9ab0a'},{c:'#e0342c',d:'#a8201a'},{c:'#2f7fe0',d:'#1d5aa8'},{c:'#f2f2f2',d:'#bdbdbd'}];
+// Cuatro tonos rojos bien separados: rojo, granate, coral y carmesí
+const COLORS=[{c:'#d91e18',d:'#a31510'},{c:'#9a1830',d:'#6b0f20'},{c:'#ff6a3d',d:'#c94a24'},{c:'#d81b60',d:'#a01246'}];
 const players = COLORS.map((col,i)=>({name:'Jugador '+(i+1), color:col.c, dark:col.d, time:null}));
 let current=0;
 const menu=document.getElementById('menu'), turnOv=document.getElementById('turnOv'), resOv=document.getElementById('resOv');
