@@ -435,7 +435,11 @@ function framed(mesh, i, lat, y){
 }
 const lam = c => new THREE.MeshLambertMaterial({color:c});
 function bannerMat(text, bg, fg, w=512, h=96, rep=1){
-  const t = canvasTex(w,h,(g)=>{ g.fillStyle=bg; g.fillRect(0,0,w,h); g.fillStyle=fg; g.font=`bold ${Math.round(h*0.62)}px "Russo One","Arial Black",sans-serif`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,w/2,h/2+2); });
+  const t = canvasTex(w,h,(g)=>{ g.fillStyle=bg; g.fillRect(0,0,w,h); g.fillStyle=fg;
+    const setSize=px=>{ g.font=`bold ${px}px "Russo One","Arial Black",sans-serif`; };
+    let px=Math.round(h*0.62); setSize(px);
+    const tw=g.measureText(text).width; if(tw>w*.92){ px=Math.floor(px*w*.92/tw); setSize(px); } // Los nombres largos se reducen hasta caber
+    g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,w/2,h/2+2); });
   if(rep>1){ t.wrapS=THREE.RepeatWrapping; t.repeat.set(rep,1); }
   return new THREE.MeshLambertMaterial({map:t});
 }
@@ -480,11 +484,15 @@ for(const name of ['Mulsanne','Arnage','Indianápolis','Primera chicane','Segund
     framed(new THREE.Mesh(new THREE.BoxGeometry(1.4,1.4,0.1), bMats[d]), i, WALL+1.2, 1.6);
   }
 }
-// Vallas publicitarias IES SANJE por todo el circuito
+// Vallas por todo el circuito: electrónica, telecomunicaciones e IES SANJE
+// Con un número impar de entradas, cada nombre cambia de color en la siguiente vuelta del ciclo
+const BOARD_NAMES = ['DIODO','TRANSISTOR','RESISTENCIA','IES SANJE','CONDENSADOR','ANTENA','FIBRA ÓPTICA','IES SANJE','BOBINA','ROUTER','MICROCONTROLADOR','IES SANJE','LED','OSCILOSCOPIO','MÓDEM'];
+const boardMats = BOARD_NAMES.flatMap(t=>[bannerMat(t,'#1d3f8a','#ffffff',512,154), bannerMat(t,'#f5c518','#1d3f8a',512,154)]);
 for(let i=130, n=0; i<N-120; i+=Math.round(260/STEP), n++){
   const side = n%2 ? 1 : -1;
   const lat = side*(WALL+4);
-  framed(new THREE.Mesh(new THREE.BoxGeometry(8,2.4,0.2), Math.random()<.5?sanjeBlue:sanjeYellow), i, lat, 2.6);
+  const nameI = n%BOARD_NAMES.length, tone = n%2;
+  framed(new THREE.Mesh(new THREE.BoxGeometry(8,2.4,0.2), boardMats[nameI*2+tone]), i, lat, 2.6);
   for(const o of [-3.2,3.2]) framed(new THREE.Mesh(new THREE.BoxGeometry(0.15,1.6,0.15), lam(0x555a60)), i, lat+o, 0.8);
 }
 // Árboles
