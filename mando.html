@@ -26,7 +26,9 @@ input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:
 #pad{ position:fixed; inset:0; display:grid; grid-template-rows:auto 1fr; padding:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-right,0px) + 10px) calc(env(safe-area-inset-bottom,0px) + 10px) calc(env(safe-area-inset-left,0px) + 10px); gap:10px; }
 .bar{ display:flex; align-items:center; gap:10px; }
 .dot{ width:12px; height:12px; border-radius:50%; background:var(--red); flex:none; }
+.dot.wait{ background:var(--yellow); }
 .dot.on{ background:var(--green); box-shadow:0 0 8px var(--green); }
+#noGame{ position:fixed; left:50%; top:72px; transform:translateX(-50%); max-width:90%; padding:8px 14px; border-radius:8px; background:var(--yellow); color:#1c1c1c; font-size:14px; font-weight:800; text-align:center; pointer-events:none; }
 .sbtn{ font-size:14px; font-weight:800; border:0; border-radius:8px; padding:10px 12px; background:var(--panel); color:var(--ink); }
 .sbtn.start{ background:var(--yellow); color:#1c1c1c; }
 .sbtn.hand.active{ background:var(--red); }
@@ -89,6 +91,7 @@ input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:
     <div class="zone brake" id="zBrake"><div class="fill" id="fBrake"></div><div class="hint">más arriba = más fuerte</div><span>FRENO</span></div>
     <div class="zone gas" id="zGas"><div class="fill" id="fGas"></div><div class="hint">más arriba = más fuerte</div><span>GAS</span></div>
   </div>
+  <div id="noGame" role="status" class="hidden"></div>
 </div>
 <div id="rotate">📱↻<br>Gira el móvil en horizontal</div>
 
@@ -103,7 +106,7 @@ const isIOS = typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent
 try{ const s=JSON.parse(localStorage.getItem('mando-sanje')||'{}'); for(const k of ['url','user','pass','prefix']) if(s[k]) $(k).value=s[k]; }catch(e){}
 const qs=new URLSearchParams(location.search); for(const k of ['url','user','prefix']) if(qs.get(k)) $(k).value=qs.get(k);
 
-let client=null, prefix='iessanje/lemans';
+let client=null, prefix='iessanje/lemans', lastGame=-1e9, gameMsg='';
 const st={steer:0, gas:0, brake:0, hand:false};
 let rawAngle=0, center=0, invert=false, hasSensor=false;
 try{ invert = localStorage.getItem('mando-sanje-inv')==='1'; }catch(e){}
@@ -125,10 +128,10 @@ $('go').addEventListener('click', async ()=>{
   if(user){ opts.username=user; opts.password=pass; }
   $('msg').textContent='Conectando…';
   client=mqtt.connect(url, opts);
-  client.on('connect',()=>{ $('dot').classList.add('on'); client.subscribe([prefix+'/telemetry', prefix+'/event']); $('setup').classList.add('hidden'); $('pad').classList.remove('hidden'); });
-  client.on('close',()=>$('dot').classList.remove('on'));
+  client.on('connect',()=>{ client.subscribe([prefix+'/telemetry', prefix+'/event']); $('setup').classList.add('hidden'); $('pad').classList.remove('hidden'); });
   client.on('error',e=>{ $('msg').textContent='Error: '+(e&&e.message||e); });
   client.on('message',(t,m)=>{
+    lastGame=performance.now();
     let j; try{ j=JSON.parse(m.toString()); }catch(e){ return; }
     if(t.endsWith('/telemetry')){ $('kmh').textContent=j.kmh|0; }
     else if(t.endsWith('/event')){
@@ -189,6 +192,11 @@ setInterval(()=>{
   $('wheel').style.transform=`rotate(${st.steer*110}deg)`;
   $('knob').style.left=((st.steer+1)/2*100)+'%';
   if(client && client.connected) client.publish(prefix+'/control', JSON.stringify({steer:+st.steer.toFixed(3), gas:st.gas, brake:st.brake, hand:st.hand?1:0}));
+  // El juego emite telemetría continuamente: si llega, es que el juego está al otro lado
+  const broker=!!(client && client.connected), seen=broker && performance.now()-lastGame<2000;
+  $('dot').className='dot'+(seen?' on':(broker?' wait':''));
+  const txt=!client||seen?'':(broker?'Buscando el juego… Ábrelo en el ordenador y usa el prefijo '+prefix:'Sin conexión con el broker. Reintentando…');
+  if(txt!==gameMsg){ gameMsg=txt; $('noGame').textContent=txt; $('noGame').classList.toggle('hidden',!txt); }
 },50);
 document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible'){ try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){} } });
 })();

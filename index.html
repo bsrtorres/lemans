@@ -127,6 +127,11 @@ details.mq label{ display:block; font-size:13px; color:var(--muted); margin-top:
 details.mq input{ width:100%; font:600 14px "Barlow",sans-serif; padding:7px 9px; border-radius:2px; border:1px solid var(--line); background:#090a0d; color:var(--ink); margin-top:4px; }
 details.mq .st{ font-size:13px; margin-top:8px; color:var(--muted); }
 details.mq button{ margin-top:10px; width:100%; }
+.linkline{ display:flex; align-items:center; gap:8px; margin:0 0 12px; font-size:14px; font-weight:700; color:var(--muted); }
+.linkline i{ width:9px; height:9px; border-radius:50%; flex:none; background:var(--red); }
+.linkline.wait i{ background:var(--yellow); }
+.linkline.ok{ color:var(--ink); }
+.linkline.ok i{ background:var(--green); box-shadow:0 0 8px var(--green); }
 
 .touch{ position:fixed; left:0; right:0; bottom:calc(env(safe-area-inset-bottom,0px) + 14px); display:none; justify-content:space-between; padding:0 14px; pointer-events:none; }
 .touch .grp{ display:flex; gap:12px; pointer-events:auto; }
@@ -218,6 +223,7 @@ details.mq button{ margin-top:10px; width:100%; }
       <div class="st" id="mqStatus">Sin conectar</div>
       <div class="st" id="padStatus">Mando o volante USB: no detectado (pulsa un botón)</div>
     </details>
+    <div class="linkline" id="linkLine" role="status"><i></i><span id="linkTxt">Conectando con el mando móvil…</span></div>
     <button class="start" id="startBtn">Empezar carrera</button>
   </div>
 </div>
@@ -843,7 +849,17 @@ function extInput(){
   return a || b;
 }
 const mqStatus=document.getElementById('mqStatus'), linkChip=document.getElementById('linkChip');
-function setStatus(txt, ok){ mqStatus.textContent=txt; linkChip.textContent='MQTT: '+(ok?'conectado':'–'); }
+const linkLine=document.getElementById('linkLine'), linkTxt=document.getElementById('linkTxt');
+let brokerOk=false, linkShown='';
+function setStatus(txt, ok){ brokerOk=ok; mqStatus.textContent=txt; linkChip.textContent='MQTT: '+(ok?'conectado':'–'); }
+// Línea visible en el menú: distingue «sin broker», «esperando al mando» y «mando conectado»
+function showLink(){
+  const padOn = mqttIn && performance.now()-mqttIn.t<1500;
+  const cls = padOn ? 'ok' : (brokerOk ? 'wait' : '');
+  const txt = padOn ? 'Mando móvil conectado' : (brokerOk ? 'Esperando al mando móvil · prefijo '+prefix : mqStatus.textContent);
+  if(cls+txt===linkShown) return;
+  linkShown=cls+txt; linkLine.className='linkline '+cls; linkTxt.textContent=txt;
+}
 function pub(sub, data){
   if(client && client.connected){ try{ client.publish(prefix+'/'+sub, typeof data==='string'?data:JSON.stringify(data)); }catch(e){} }
 }
@@ -877,6 +893,9 @@ function connectFromUI(){
 }
 document.getElementById('mqBtn').addEventListener('click', connectFromUI);
 try{ const sv=JSON.parse(localStorage.getItem('lemans-mqtt')||'null'); if(sv){ document.getElementById('mqUrl').value=sv.url||''; document.getElementById('mqPrefix').value=sv.prefix||'iessanje/lemans'; document.getElementById('mqUser').value=sv.user||''; } }catch(e){}
+// La conexión es automática; con usuario hace falta teclear la contraseña, que no se guarda
+if(document.getElementById('mqUser').value.trim()) setStatus('Escribe la contraseña en «Conexión MQTT y mandos» y pulsa Conectar',false);
+else connectFromUI();
 const padStatus=document.getElementById('padStatus');
 function pollPad(){
   const pads = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -951,6 +970,7 @@ document.getElementById('loading').classList.add('hidden');
 function frame(now){
   const dt=Math.min(0.033,(now-last)/1000); last=now; raceClock+=dt;
   pollPad();
+  showLink();
   physics(dt/2); physics(dt/2);
   const fs=car.fs, kmh=Math.round(Math.abs(fs)*3.6);
   // Coche y cámara
