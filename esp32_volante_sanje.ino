@@ -39,7 +39,9 @@ const int   MQTT_PORT = 1883;
 // En FlowFuse el usuario es también el ID de cliente: "volante@IDdelEquipo"
 const char* MQTT_USER = "";   // vacío con HiveMQ
 const char* MQTT_PASS = "";
-const char* PREFIX    = "iessanje/lemans";   // igual que en el juego
+// Prefijo + código de sala: copia las 4 letras que muestra el juego en el menú
+// (por ejemplo, si el juego enseña la sala K7P2, pon "iessanje/lemans/K7P2")
+const char* PREFIX    = "iessanje/lemans/K7P2";
 
 #define PIN_STEER 34
 #define PIN_GAS   35

@@ -128,6 +128,32 @@ details.mq label{ display:block; font-size:13px; color:var(--muted); margin-top:
 details.mq input{ width:100%; font:600 14px "Barlow",sans-serif; padding:7px 9px; border-radius:2px; border:1px solid var(--line); background:#090a0d; color:var(--ink); margin-top:4px; }
 details.mq .st{ font-size:13px; margin-top:8px; color:var(--muted); }
 details.mq button{ margin-top:10px; width:100%; }
+.menuwrap{ display:flex; flex-wrap:wrap; align-items:flex-start; gap:16px; width:100%; }
+.card.side{ max-width:350px; padding:18px 20px; }
+.pair{ display:flex; gap:14px; align-items:center; margin-bottom:14px; }
+.qr{ width:124px; height:124px; flex:none; background:#fff; border-radius:3px; display:grid; place-items:center; overflow:hidden; }
+.qr svg{ width:100%; height:100%; display:block; }
+.qr .noqr{ color:#333; font-size:12px; line-height:1.3; padding:8px; text-align:center; }
+.pair h3{ margin:0 0 4px; font:800 20px/1 var(--display); letter-spacing:.04em; text-transform:uppercase; }
+.pair p{ margin:0 0 6px; font-size:13px; }
+.roomCode{ font:800 38px/1 var(--display); letter-spacing:.16em; color:var(--yellow); }
+.side .url{ font-size:11px; color:var(--muted); word-break:break-all; margin:-6px 0 12px; -webkit-user-select:text; user-select:text; }
+button.small{ padding:5px 10px; font-size:13px; margin-top:8px; width:auto; }
+.opts{ display:grid; gap:9px; margin-bottom:12px; padding:11px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); font-size:14px; }
+.opts label{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.opts select{ font:600 14px "Barlow",sans-serif; padding:5px 7px; border-radius:2px; border:1px solid var(--line); background:#090a0d; color:var(--ink); }
+.opts input[type=checkbox]{ width:18px; height:18px; accent-color:var(--accent); }
+.side h4{ margin:0 0 4px; font:800 16px/1 var(--display); letter-spacing:.1em; text-transform:uppercase; color:var(--accent-text); }
+table.rec{ width:100%; border-collapse:collapse; font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; }
+table.rec td{ padding:4px 3px; border-bottom:1px solid var(--line); }
+table.rec td.n{ color:var(--muted); width:22px; }
+table.rec td.t{ text-align:right; }
+table.rec td.d{ text-align:right; color:var(--muted); font-size:12px; width:42px; }
+table.rec tr.first td{ color:var(--yellow); }
+table.rec .dot{ display:inline-block; width:10px; height:10px; margin-right:6px; }
+.empty{ color:var(--muted); font-size:13px; padding:6px 0; font-weight:500; }
+.tower footer b.ahead{ color:var(--green); } .tower footer b.behind{ color:var(--red); }
+#resRec{ font-size:14px; margin:-10px 0 16px; }
 .linkline{ display:flex; align-items:center; gap:8px; margin:0 0 12px; font-size:14px; font-weight:700; color:var(--muted); }
 .linkline i{ width:9px; height:9px; border-radius:50%; flex:none; background:var(--red); }
 .linkline.wait i{ background:var(--yellow); }
@@ -172,12 +198,13 @@ details.mq button{ margin-top:10px; width:100%; }
       <div class="split" id="sp2"><i>S3</i><b>–</b></div>
     </div>
     <footer><span id="bestLbl">Mejor</span><b id="bestTxt">–</b></footer>
+    <footer><span id="ghostLbl">Fantasma</span><b id="ghostTxt">–</b></footer>
     <div class="sec" id="secTxt">Recta de meta</div>
   </section>
   <div class="right">
     <canvas id="mini"></canvas>
     <div class="status">
-      <span class="chip" id="linkChip">MQTT: –</span>
+      <span class="chip" id="linkChip">Sala –</span>
       <button id="camBtn" aria-label="Cambiar entre la vista de cabina y la exterior">Vista: cabina</button>
       <button id="mute" aria-label="Activar o silenciar el sonido del motor">Sonido: sí</button>
     </div>
@@ -203,6 +230,7 @@ details.mq button{ margin-top:10px; width:100%; }
 </div>
 
 <div class="overlay" id="menu">
+  <div class="menuwrap">
   <div class="card">
     <span class="badge">IES SANJE</span>
     <h1>Vuelta rápida en La Sarthe</h1>
@@ -214,20 +242,41 @@ details.mq button{ margin-top:10px; width:100%; }
       <span><kbd>←</kbd> <kbd>→</kbd> <kbd>A</kbd> <kbd>D</kbd></span><span>Girar (a alta velocidad, toques suaves)</span>
       <span><kbd>Espacio</kbd></span><span>Freno de mano</span>
       <span><kbd>C</kbd></span><span>Vista de cabina o exterior</span>
+      <span><kbd>G</kbd></span><span>Mostrar u ocultar el fantasma</span>
       <span><kbd>M</kbd></span><span>Sonido del motor</span>
     </div>
     <details class="mq">
-      <summary>Conexión MQTT y mandos</summary>
+      <summary>Conexión MQTT avanzada y mandos USB</summary>
       <label>Broker MQTT por WebSocket<input id="mqUrl" value="wss://broker.hivemq.com:8884/mqtt" autocomplete="off"></label>
       <label>Usuario (opcional)<input id="mqUser" placeholder="(vacío con HiveMQ)" autocomplete="off"></label>
       <label>Contraseña (opcional)<input id="mqPass" type="password" autocomplete="off"></label>
-      <label>Prefijo de los temas<input id="mqPrefix" value="iessanje/lemans" autocomplete="off"></label>
-      <button class="ghost" id="mqBtn">Conectar</button>
+      <label>Prefijo base de los temas (se le añade la sala)<input id="mqPrefix" value="iessanje/lemans" autocomplete="off"></label>
+      <button class="ghost" id="mqBtn">Reconectar</button>
       <div class="st" id="mqStatus">Sin conectar</div>
       <div class="st" id="padStatus">Mando o volante USB: no detectado (pulsa un botón)</div>
     </details>
     <div class="linkline" id="linkLine" role="status"><i></i><span id="linkTxt">Conectando con el mando móvil…</span></div>
     <button class="start" id="startBtn">Empezar carrera</button>
+  </div>
+  <div class="card side">
+    <div class="pair">
+      <div class="qr" id="qrBox" role="img" aria-label="Código QR para abrir el mando del móvil"></div>
+      <div>
+        <h3>Conduce con el móvil</h3>
+        <p>Escanea el código, o abre el mando y escribe la sala:</p>
+        <div class="roomCode" id="roomTxt">····</div>
+        <button class="ghost small" id="newRoomBtn">Nueva sala</button>
+      </div>
+    </div>
+    <div class="url" id="mandoUrl"></div>
+    <div class="opts">
+      <label><span style="white-space:nowrap">Calidad gráfica</span> <select id="quality"><option value="baja">Baja (PC lento)</option><option value="media">Media</option><option value="alta">Alta</option></select></label>
+      <label>Coche fantasma de la mejor vuelta <input type="checkbox" id="ghostOn" checked></label>
+    </div>
+    <h4>Récords de este ordenador</h4>
+    <table class="rec" id="recTable"></table>
+    <button class="ghost small" id="clearRec">Borrar récords</button>
+  </div>
   </div>
 </div>
 
@@ -245,6 +294,7 @@ details.mq button{ margin-top:10px; width:100%; }
     <span class="badge">Clasificación final</span>
     <h1 id="resTitle">Resultados</h1>
     <table class="res" id="resTable"></table>
+    <p id="resRec"></p>
     <div class="btns">
       <button class="start" id="againBtn">Otra ronda</button>
       <button class="ghost" id="changeBtn">Cambiar pilotos</button>
@@ -255,6 +305,7 @@ details.mq button{ margin-top:10px; width:100%; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mqtt@4.3.7/dist/mqtt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
 (() => {
 if(!window.THREE){ document.getElementById('loading').textContent = 'No se pudo cargar el motor 3D. Recarga la página.'; return; }
@@ -499,8 +550,9 @@ for(let i=130, n=0; i<N-120; i+=Math.round(260/STEP), n++){
   for(const o of [-3.2,3.2]) framed(new THREE.Mesh(new THREE.BoxGeometry(0.15,1.6,0.15), lam(0x555a60)), i, lat+o, 0.8);
 }
 // Árboles
+let trees=null;
 {
-  const COUNT = 3200;
+  const COUNT = 3200, cumB=[], cumP=[];
   const leafTex = canvasTex(128,128,(g,w,h)=>{ g.fillStyle='#c4c4c4'; g.fillRect(0,0,w,h); for(let k=0;k<1500;k++){ const v=105+Math.random()*150|0; g.fillStyle=`rgb(${v},${v},${v})`; g.beginPath(); g.arc(Math.random()*w,Math.random()*h,1.5+Math.random()*3.5,0,7); g.fill(); } });
   const leafMat = new THREE.MeshLambertMaterial({map:leafTex});
   // Frondosa: esfera irregular, con el mismo desplazamiento en vértices coincidentes para que no se abra
@@ -536,11 +588,12 @@ for(let i=130, n=0; i<N-120; i+=Math.round(260/STEP), n++){
     sc.set(s,trunkH,s); p.set(x, trunkH/2, z); m.compose(p,q0,sc); trunk.setMatrixAt(n,m);
     const shH = (trunkH+6*s)*.5, r = (isPine?8:12)*s;
     sc.set(r*1.5,1,r); p.set(x-SUN_DIR.x/SUN_DIR.y*shH, .04, z-SUN_DIR.z/SUN_DIR.y*shH); m.compose(p,q0,sc); blob.setMatrixAt(n,m);
-    n++;
+    n++; cumB.push(nB); cumP.push(nP);
   }
   broad.count=nB; pine.count=nP; trunk.count=n; blob.count=n;
   // Three r128 descarta los instanciados según la caja de la geometría base, situada en el origen
   for(const o of [broad,pine,trunk,blob]){ o.frustumCulled=false; scene.add(o); }
+  trees={broad,pine,trunk,blob,n,cumB,cumP};
 }
 
 /* =========== Coche y cabina =========== */
@@ -598,6 +651,7 @@ tube(.02,[-0.56,1.5,-0.46],[0.56,1.5,-0.46]);
 { const st=new THREE.Mesh(new THREE.PlaneGeometry(0.42,0.08), new THREE.MeshBasicMaterial({map:canvasTex(512,96,(g)=>{g.fillStyle='#8f1420';g.fillRect(0,0,512,96);g.fillStyle='#fff';g.font='bold 60px "Russo One",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('IES SANJE',256,50);})}));
   st.rotation.x=-Math.PI/2; st.position.set(0.5,dashY(0.5,-0.86)+0.004,-0.86); cockpit.add(st); }
 const pillarMat = carbon;
+const mirrors=[];
 const mirrorMat = new THREE.MeshBasicMaterial({fog:false, map:canvasTex(64,32,(g,w,h)=>{ const c=g.createLinearGradient(0,0,0,h); c.addColorStop(0,'#9dc1de'); c.addColorStop(.52,'#d9e4e8'); c.addColorStop(.56,'#55684a'); c.addColorStop(.7,'#4a4c50'); c.addColorStop(1,'#3a3c40'); g.fillStyle=c; g.fillRect(0,0,w,h); })});
 for(const s of [1,-1]){
   const pl = new THREE.Mesh(new THREE.CylinderGeometry(.024,.034,1,10), pillarMat); cockpit.add(pl);
@@ -605,7 +659,14 @@ for(const s of [1,-1]){
   box(0.34,0.022,0.04,carbon, s*0.86,0.98,-0.97);
   const shell=new THREE.Mesh(new THREE.SphereGeometry(.11,18,12),bodyMat); shell.scale.set(1,.52,.42); shell.position.set(s*1.02,1.0,-0.985); cockpit.add(shell);
   const mir=new THREE.Mesh(new THREE.CircleGeometry(.092,22),mirrorMat); mir.scale.set(1,.48,1); mir.position.set(s*1.02,1.0,-0.905); mir.rotation.y=-s*0.28; cockpit.add(mir);
+  // Cada espejo enseña una mitad de la imagen de la cámara trasera, invertida como en un espejo
+  const uv=mir.geometry.attributes.uv; for(let k=0;k<uv.count;k++){ const u=uv.getX(k); uv.setX(k, s<0 ? 1-u*0.5 : 0.5-u*0.5); }
+  mirrors.push(mir);
 }
+const mirrorIdleTex = mirrorMat.map;
+const rearCam = new THREE.PerspectiveCamera(22, 4.2, 0.3, 2500);
+rearCam.position.set(0,1.25,0.9); rearCam.rotation.y = Math.PI; carG.add(rearCam);
+let mirrorRT = null;
 box(1.2,0.04,1.15,suede,0,1.53,0.05);
 box(0.3,0.03,0.2,carbon,0,1.505,-0.32);
 for(let k=0;k<4;k++){ const t=new THREE.Mesh(new THREE.CylinderGeometry(.009,.009,.026,8), new THREE.MeshBasicMaterial({color:k===0?0xe0342c:0xd8d8d8})); t.position.set(-0.09+k*0.06,1.485,-0.32); cockpit.add(t); }
@@ -762,6 +823,15 @@ function drawDisplay(kmh, gear, rpmFrac){
   leds.forEach((l,k)=>{ const on = rpmFrac > 0.55 + k*0.045; l.material.color.setHex(on ? (k<4?0x33dd55:(k<8?0xff3b30:0x3d7bff)) : 0x222222); });
 }
 
+/* =========== Coche fantasma (repite la mejor vuelta guardada) =========== */
+const ghostMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.32, depthWrite:false});
+const ghostDark = new THREE.MeshBasicMaterial({color:0x111111, transparent:true, opacity:0.32, depthWrite:false});
+const ghostG = new THREE.Group(); ghostG.visible=false; scene.add(ghostG);
+box(1.9,0.4,4.5,ghostMat,0,0.45,-0.7,ghostG);
+box(1.0,0.42,1.5,ghostMat,0,0.86,-0.2,ghostG);
+box(2.0,0.06,0.36,ghostMat,0,1.22,1.62,ghostG);
+for(const [x,z] of [[-0.9,-2.1],[0.9,-2.1],[-0.9,1.0],[0.9,1.0]]) box(0.34,0.68,0.72,ghostDark,x,0.34,z,ghostG);
+
 /* =========== Sonido de motor =========== */
 let audio=null, muted=false;
 function initAudio(){
@@ -786,6 +856,8 @@ camBtn.addEventListener('click', ()=>{ toggleCam(); camBtn.blur(); });
 const keys = {gas:false, brake:false, left:false, right:false, hand:false};
 const car = {x:0,z:0,a:0,vx:0,vz:0,steer:0,idx:0,lat:0,latAcc:0,fs:0};
 let state='menu', raceClock=0, lapStart=0, nextSector=1, curSector=0, lastIdx=0, frozen=null, shake=0;
+let extG=0, extB=0;                           // pedales externos suavizados
+let prog=0, progIdx=0, trace=[], traceT=0;    // progreso de la vuelta y grabación para el fantasma
 const SECT = 8;
 function placeAt(i){
   car.x=PX[i]; car.z=PZ[i]; car.a=Math.atan2(TZ[i],TX[i]); car.vx=car.vz=0; car.steer=0; car.idx=i; lastIdx=i; car.fs=0;
@@ -809,10 +881,12 @@ function physics(dt){
   const onRoad = d < HALF+KERB, onKerb = d > HALF-0.4 && d < HALF+KERB;
   const ext = extInput();
   const hand = racing && (keys.hand || (ext && ext.hand));
-  if(ext && racing){ car.steer += (ext.steer-car.steer)*Math.min(1, dt*14); }
+  // La entrada externa (móvil, ESP32, mando USB) llega a saltos por la red: se suaviza
+  if(ext && racing){ car.steer += (ext.steer-car.steer)*Math.min(1, dt*9); }
   else { const inp = racing ? (keys.right?1:0)-(keys.left?1:0) : 0; car.steer += (inp-car.steer)*Math.min(1, dt*(inp?2.8:5)); }
-  const gasAmt = racing ? Math.max(keys.gas?1:0, ext?ext.gas:0) : 0;
-  const brkAmt = racing ? Math.max(keys.brake?1:0, ext?ext.brake:0) : 0;
+  if(ext){ extG += (ext.gas-extG)*Math.min(1, dt*12); extB += (ext.brake-extB)*Math.min(1, dt*16); } else { extG=0; extB=0; }
+  const gasAmt = racing ? Math.max(keys.gas?1:0, extG) : 0;
+  const brkAmt = racing ? Math.max(keys.brake?1:0, extB) : 0;
   car.gas = gasAmt; car.brk = brkAmt;
   let fx=Math.cos(car.a), fz=Math.sin(car.a);
   let fs=car.vx*fx+car.vz*fz;
@@ -897,7 +971,7 @@ function markSplit(k, cum){
 document.getElementById('startBtn').addEventListener('click', startGame);
 document.getElementById('goBtn').addEventListener('click', startTurn);
 document.getElementById('againBtn').addEventListener('click', ()=>{ resOv.classList.add('hidden'); newRound(); });
-document.getElementById('changeBtn').addEventListener('click', ()=>{ resOv.classList.add('hidden'); menu.classList.remove('hidden'); state='menu'; });
+document.getElementById('changeBtn').addEventListener('click', ()=>{ resOv.classList.add('hidden'); menu.classList.remove('hidden'); state='menu'; renderRecs(); });
 
 function startGame(){
   if(state!=='menu') return;
@@ -905,7 +979,7 @@ function startGame(){
   inputsEl.querySelectorAll('input').forEach((inp,i)=>{ players[i].name = inp.value.trim() || ('Jugador '+(i+1)); });
   menu.classList.add('hidden'); newRound();
 }
-function newRound(){ players.forEach(p=>p.time=null); current=0; showTurn(); }
+function newRound(){ players.forEach(p=>{ p.time=null; p.recPos=-1; }); current=0; showTurn(); }
 function leader(){ return players.filter(p=>p.time!=null).sort((a,b)=>a.time-b.time)[0] || null; }
 function showTurn(){
   state='turn'; const p=players[current]; paintCar(p); placeAt(3); frozen=null; resetSplits();
@@ -913,7 +987,8 @@ function showTurn(){
   document.getElementById('turnName').textContent=p.name;
   document.getElementById('turnDot').style.background=p.color;
   const L=leader();
-  document.getElementById('turnInfo').textContent = L ? 'Tiempo a batir: '+fmt(L.time)+' de '+L.name+'.' : 'Una sola vuelta. Frena fuerte antes de Mulsanne y Arnage.';
+  document.getElementById('turnInfo').textContent = (L ? 'Tiempo a batir: '+fmt(L.time)+' de '+L.name+'.' : 'Una sola vuelta. Frena fuerte antes de Mulsanne y Arnage.')
+    + (ghost && ghostOn ? ' Te acompaña el fantasma de '+ghost.name+' ('+fmt(ghost.time)+').' : '');
   turnOv.classList.remove('hidden'); document.getElementById('goBtn').focus();
   pub('event',{type:'turn',n:current+1,player:p.name,color:p.color});
 }
@@ -922,6 +997,7 @@ function startTurn(){
   initAudio();
   turnOv.classList.add('hidden'); document.activeElement.blur();
   placeAt(3); nextSector=1; curSector=0; state='countdown';
+  prog=0; progIdx=car.idx; trace=[]; traceT=0; ghostPtr=0;
   lights.classList.remove('hidden');
   const spans=lights.querySelectorAll('span'); spans.forEach(s=>s.classList.remove('on'));
   let n=0;
@@ -933,9 +1009,12 @@ function startTurn(){
 function endTurn(t){
   if(state!=='race') return;
   state='done'; frozen=t;
+  trace.push([+t.toFixed(2), +car.x.toFixed(2), +car.z.toFixed(2), +car.a.toFixed(3), prog]);
   const p=players[current], L=leader(); p.time=t;
-  pub('event',{type:'lap',player:p.name,time:+t.toFixed(3),best:!L||t<L.time});
-  toast(!L || t<L.time ? '¡Mejor tiempo! '+fmt(t) : fmt(t), 2200);
+  p.recPos = addRecord(p.name, t, p.color);
+  if(!ghost || t<ghost.time){ ghost={name:p.name, color:p.color, time:+t.toFixed(3), s:trace}; saveGhost(); }
+  pub('event',{type:'lap',player:p.name,time:+t.toFixed(3),best:!L||t<L.time,record:p.recPos===0});
+  toast(p.recPos===0 ? '¡Récord! '+fmt(t) : (!L || t<L.time ? '¡Mejor tiempo! '+fmt(t) : fmt(t)), 2400);
   setTimeout(()=>{ current++; if(current<players.length) showTurn(); else showResults(); }, 2600);
 }
 function showResults(){
@@ -949,6 +1028,9 @@ function showResults(){
     tr.children[1].append(p.name); tb.appendChild(tr);
   });
   document.getElementById('resTitle').textContent='¡Gana '+ok[0].name+'!';
+  const ins = players.filter(p=>p.recPos>=0).sort((a,b)=>a.recPos-b.recPos);
+  document.getElementById('resRec').textContent = ins.length ? 'Entran en los récords de este ordenador: '+ins.map(p=>p.name+' ('+(p.recPos+1)+'.º)').join(', ')+'.' : 'Récord de este ordenador: '+(records[0]?records[0].name+', '+fmt(records[0].time):'–')+'.';
+  renderRecs();
   pub('event',{type:'results',ranking:ok.map(p=>({player:p.name,time:+p.time.toFixed(3)}))});
   resOv.classList.remove('hidden'); document.getElementById('againBtn').focus();
 }
@@ -956,10 +1038,12 @@ function showResults(){
 /* =========== Controles =========== */
 const map={ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'hand'};
 window.addEventListener('keydown', e=>{
+  if(e.target.tagName==='SELECT' || (e.target.tagName==='INPUT' && e.target.type==='checkbox')) return;
   if(e.target.tagName==='INPUT'){ if(e.code==='Enter'){ if(e.target.id.startsWith('mq')) connectFromUI(); else if(state==='menu') startGame(); } return; }
   if(map[e.code]){ keys[map[e.code]]=true; e.preventDefault(); }
   if(e.code==='KeyM'){ initAudio(); toggleMute(); }
   if(e.code==='KeyC') toggleCam();
+  if(e.code==='KeyG'){ setGhostOn(!ghostOn); toast(ghostOn?'Fantasma visible':'Fantasma oculto',900); }
   if(e.code==='Enter' && document.activeElement.tagName!=='BUTTON') pressStart();
 });
 window.addEventListener('keyup', e=>{ if(e.target.tagName==='INPUT') return; if(map[e.code]){ keys[map[e.code]]=false; e.preventDefault(); } });
@@ -976,6 +1060,40 @@ function pressStart(){
   else if(state==='results'){ resOv.classList.add('hidden'); newRound(); }
 }
 
+/* =========== Sala y código QR =========== */
+// Cada ordenador tiene su sala: el código forma parte del tema MQTT y así no se mezclan los mandos
+const ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // sin O/0 ni I/1 para no confundirse
+function newRoomCode(){ const a=new Uint32Array(4); crypto.getRandomValues(a); let r=''; for(const v of a) r+=ALPH[v%ALPH.length]; return r; }
+let room=null, baseTopic='iessanje/lemans';
+{ const q=new URLSearchParams(location.search).get('sala')||''; if(/^[A-Z0-9]{4}$/i.test(q)) room=q.toUpperCase(); }
+if(!room){ try{ room=localStorage.getItem('lemans-room'); }catch(e){} }
+if(!room || !/^[A-Z0-9]{4}$/.test(room)) room=newRoomCode();
+try{ localStorage.setItem('lemans-room', room); }catch(e){}
+function mandoURL(){
+  if(!/^https?:$/.test(location.protocol) || /claude/i.test(location.hostname)) return null;
+  const u=new URL('mando.html', location.href);
+  u.search=''; u.hash='';
+  u.searchParams.set('sala', room);
+  const b=document.getElementById('mqUrl').value.trim();
+  if(b && b!=='wss://broker.hivemq.com:8884/mqtt') u.searchParams.set('broker', b);
+  if(baseTopic!=='iessanje/lemans') u.searchParams.set('prefijo', baseTopic);
+  return u.toString();
+}
+function renderQR(){
+  document.getElementById('roomTxt').textContent=room;
+  const qb=document.getElementById('qrBox'), ut=document.getElementById('mandoUrl');
+  const u=mandoURL();
+  if(!u){ qb.innerHTML='<div class="noqr">Abre el juego desde GitHub Pages para ver aquí el QR.</div>'; ut.textContent=''; return; }
+  ut.textContent=u;
+  if(!window.qrcode){ qb.innerHTML='<div class="noqr">No se pudo cargar el generador de QR. Usa la dirección de abajo.</div>'; return; }
+  try{ const q=qrcode(0,'M'); q.addData(u); q.make(); qb.innerHTML=q.createSvgTag({cellSize:4, margin:2, scalable:true}); }
+  catch(e){ qb.innerHTML='<div class="noqr">No se pudo crear el QR.</div>'; }
+}
+document.getElementById('newRoomBtn').addEventListener('click', ()=>{
+  room=newRoomCode(); try{ localStorage.setItem('lemans-room', room); }catch(e){}
+  mqttIn=null; connectFromUI(); toast('Nueva sala: '+room, 1200);
+});
+
 /* =========== Entradas externas: MQTT y mando USB =========== */
 let mqttIn=null, padIn=null, client=null, prefix='iessanje/lemans', lastImpact=0, padStartPrev=false;
 function extInput(){
@@ -988,12 +1106,12 @@ function extInput(){
 const mqStatus=document.getElementById('mqStatus'), linkChip=document.getElementById('linkChip');
 const linkLine=document.getElementById('linkLine'), linkTxt=document.getElementById('linkTxt');
 let brokerOk=false, linkShown='';
-function setStatus(txt, ok){ brokerOk=ok; mqStatus.textContent=txt; linkChip.textContent='MQTT: '+(ok?'conectado':'–'); }
+function setStatus(txt, ok){ brokerOk=ok; mqStatus.textContent=txt; linkChip.textContent='Sala '+room+(ok?'':' · sin conexión'); }
 // Línea visible en el menú: distingue «sin broker», «esperando al mando» y «mando conectado»
 function showLink(){
   const padOn = mqttIn && performance.now()-mqttIn.t<1500;
   const cls = padOn ? 'ok' : (brokerOk ? 'wait' : '');
-  const txt = padOn ? 'Mando móvil conectado' : (brokerOk ? 'Esperando al mando móvil · prefijo '+prefix : mqStatus.textContent);
+  const txt = padOn ? 'Mando móvil conectado' : (brokerOk ? 'Esperando al mando móvil · sala '+room : mqStatus.textContent);
   if(cls+txt===linkShown) return;
   linkShown=cls+txt; linkLine.className='linkline '+cls; linkTxt.textContent=txt;
 }
@@ -1003,9 +1121,11 @@ function pub(sub, data){
 function impact(v){ const now=performance.now(); if(now-lastImpact>300){ lastImpact=now; pub('event',{type:'impact',force:+v.toFixed(1)}); } }
 function connectFromUI(){
   const url=document.getElementById('mqUrl').value.trim();
-  prefix=(document.getElementById('mqPrefix').value.trim()||'iessanje/lemans').replace(/\/+$/,'');
+  baseTopic=(document.getElementById('mqPrefix').value.trim()||'iessanje/lemans').replace(/\/+$/,'');
+  prefix=baseTopic+'/'+room;
   const user=document.getElementById('mqUser').value.trim(), pass=document.getElementById('mqPass').value;
-  try{ localStorage.setItem('lemans-mqtt', JSON.stringify({url,prefix,user})); }catch(e){}
+  try{ localStorage.setItem('lemans-mqtt', JSON.stringify({url,prefix:baseTopic,user})); }catch(e){}
+  renderQR();
   if(!url){ setStatus('Escribe la dirección del broker (ws://… o wss://…)',false); return; }
   if(!window.mqtt){ setStatus('No se pudo cargar la librería MQTT',false); return; }
   if(location.protocol==='https:' && url.startsWith('ws://')){ setStatus('Esta página es https: usa wss://, o descarga el archivo y ábrelo en tu ordenador para usar ws://',false); return; }
@@ -1016,7 +1136,7 @@ function connectFromUI(){
     if(user){ opts.username=user; opts.password=pass; }
     client = mqtt.connect(url,opts);
   }catch(e){ setStatus('Error: '+e.message,false); return; }
-  client.on('connect',()=>{ setStatus('Conectado a '+url,true); client.subscribe([prefix+'/control', prefix+'/cmd']); pub('event',{type:'hello'}); });
+  client.on('connect',()=>{ setStatus('Conectado a '+url+' · temas '+prefix+'/…',true); client.subscribe([prefix+'/control', prefix+'/cmd']); pub('event',{type:'hello'}); });
   client.on('error',e=>setStatus('Error: '+(e&&e.message||e),false));
   client.on('close',()=>setStatus('Sin conexión (reintentando…)',false));
   client.on('message',(topic,msg)=>{
@@ -1031,7 +1151,7 @@ function connectFromUI(){
 document.getElementById('mqBtn').addEventListener('click', connectFromUI);
 try{ const sv=JSON.parse(localStorage.getItem('lemans-mqtt')||'null'); if(sv){ document.getElementById('mqUrl').value=sv.url||''; document.getElementById('mqPrefix').value=sv.prefix||'iessanje/lemans'; document.getElementById('mqUser').value=sv.user||''; } }catch(e){}
 // La conexión es automática; con usuario hace falta teclear la contraseña, que no se guarda
-if(document.getElementById('mqUser').value.trim()) setStatus('Escribe la contraseña en «Conexión MQTT y mandos» y pulsa Conectar',false);
+if(document.getElementById('mqUser').value.trim()){ renderQR(); setStatus('Escribe la contraseña en «Conexión MQTT avanzada» y pulsa Reconectar',false); }
 else connectFromUI();
 const padStatus=document.getElementById('padStatus');
 function pollPad(){
@@ -1058,6 +1178,90 @@ function telemetry(dt, kmh, gear, rpmFrac){
     kerb:!!car.kerb, offroad:!!car.off, steer:+car.steer.toFixed(2), lean:+leanS.toFixed(3) });
 }
 
+/* =========== Récords y fantasma (se guardan en este ordenador) =========== */
+function lsGet(k,def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+let records = lsGet('lemans-records', []); if(!Array.isArray(records)) records=[];
+let ghost = lsGet('lemans-ghost', null);
+let ghostOn = lsGet('lemans-ghost-on', true);
+let ghostByProg = null, ghostPtr = 0;
+function addRecord(name, t, color){
+  const rec={name, time:+t.toFixed(3), color, date:new Date().toISOString().slice(0,10), id:Math.random().toString(36).slice(2)};
+  records.push(rec); records.sort((a,b)=>a.time-b.time); records=records.slice(0,8);
+  lsSet('lemans-records', records);
+  return records.findIndex(r=>r.id===rec.id);
+}
+function renderRecs(){
+  const tb=document.getElementById('recTable'); tb.innerHTML='';
+  if(!records.length){ tb.innerHTML='<tr><td class="empty">Todavía no hay vueltas guardadas.</td></tr>'; return; }
+  records.forEach((r,i)=>{
+    const tr=document.createElement('tr'); if(i===0) tr.className='first';
+    const d=r.date ? r.date.slice(8,10)+'/'+r.date.slice(5,7) : '';
+    tr.innerHTML=`<td class="n">${i+1}</td><td><span class="dot"></span></td><td class="t">${fmt(r.time)}</td><td class="d">${d}</td>`;
+    tr.querySelector('.dot').style.background=r.color;
+    tr.children[1].append(r.name); tb.appendChild(tr);
+  });
+}
+function buildGhostIndex(){
+  ghostByProg=null; ghostPtr=0;
+  if(!ghost || !Array.isArray(ghost.s) || ghost.s.length<2){ ghost=null; return; }
+  let maxP=0; for(const s of ghost.s) maxP=Math.max(maxP, s[4]);
+  if(maxP<=0) return;
+  const arr=new Float32Array(maxP+1).fill(-1);
+  for(const s of ghost.s){ const p=Math.max(0,s[4]); if(arr[p]<0) arr[p]=s[0]; }
+  let lastT=0; for(let i=0;i<arr.length;i++){ if(arr[i]<0) arr[i]=lastT; else lastT=arr[i]; }
+  ghostByProg=arr;
+  ghostMat.color.set(ghost.color);
+}
+function saveGhost(){
+  buildGhostIndex();
+  if(!lsSet('lemans-ghost', ghost)) toast('No se pudo guardar el fantasma en este navegador', 1500);
+}
+function setGhostOn(v){ ghostOn=v; lsSet('lemans-ghost-on', v); document.getElementById('ghostOn').checked=v; }
+document.getElementById('ghostOn').checked=!!ghostOn;
+document.getElementById('ghostOn').addEventListener('change', e=>{ setGhostOn(e.target.checked); e.target.blur(); });
+let clearArmed=false;
+document.getElementById('clearRec').addEventListener('click', e=>{
+  const b=e.currentTarget;
+  if(!clearArmed){ clearArmed=true; b.textContent='¿Seguro? Pulsa otra vez'; setTimeout(()=>{ clearArmed=false; b.textContent='Borrar récords'; },3000); return; }
+  clearArmed=false; b.textContent='Borrar récords';
+  records=[]; ghost=null; ghostByProg=null;
+  try{ localStorage.removeItem('lemans-records'); localStorage.removeItem('lemans-ghost'); }catch(err){}
+  renderRecs(); toast('Récords borrados', 1000);
+});
+buildGhostIndex();
+renderRecs();
+function ghostAt(t){
+  const s=ghost.s; if(t<=s[0][0]) return s[0];
+  if(t>=s[s.length-1][0]) return s[s.length-1];
+  if(ghostPtr>=s.length-1 || s[ghostPtr][0]>t) ghostPtr=0;
+  while(ghostPtr<s.length-2 && s[ghostPtr+1][0]<t) ghostPtr++;
+  const a=s[ghostPtr], b=s[ghostPtr+1], k=(t-a[0])/Math.max(1e-6,b[0]-a[0]);
+  let da=b[3]-a[3]; if(da>Math.PI) da-=2*Math.PI; if(da<-Math.PI) da+=2*Math.PI;
+  return [t, a[1]+(b[1]-a[1])*k, a[2]+(b[2]-a[2])*k, a[3]+da*k];
+}
+
+/* =========== Calidad gráfica =========== */
+const QUAL={
+  baja:{pr:1, trees:0.3, shadows:false, mirror:0},
+  media:{pr:Math.min(1.25, window.devicePixelRatio||1), trees:0.7, shadows:true, mirror:256},
+  alta:{pr:Math.min(2, window.devicePixelRatio||1), trees:1, shadows:true, mirror:512}
+};
+let quality = lsGet('lemans-quality', 'alta'); if(!QUAL[quality]) quality='alta';
+function applyQuality(q){
+  quality=q; const c=QUAL[q]; lsSet('lemans-quality', q);
+  renderer.setPixelRatio(c.pr); renderer.setSize(innerWidth, innerHeight);
+  if(trees){ const k=Math.max(1,Math.round(trees.n*c.trees)); trees.trunk.count=k; trees.blob.count=k; trees.broad.count=trees.cumB[k-1]; trees.pine.count=trees.cumP[k-1]; }
+  sun.castShadow=c.shadows;
+  if(mirrorRT){ mirrorRT.dispose(); mirrorRT=null; }
+  if(c.mirror){ mirrorRT=new THREE.WebGLRenderTarget(c.mirror, Math.round(c.mirror/4.2)); mirrorMat.map=mirrorRT.texture; }
+  else mirrorMat.map=mirrorIdleTex;
+  mirrorMat.needsUpdate=true;
+  document.getElementById('quality').value=q;
+}
+document.getElementById('quality').addEventListener('change', e=>{ applyQuality(e.target.value); e.target.blur(); });
+applyQuality(quality);
+
 /* =========== Minimapa =========== */
 const mini=document.getElementById('mini'), mctx=mini.getContext('2d');
 let minx=1e9,maxx=-1e9,minz=1e9,maxz=-1e9;
@@ -1074,6 +1278,7 @@ function drawMini(){
   mctx.strokeStyle='rgba(0,0,0,.65)'; mctx.lineWidth=5*dpr/s; mctx.stroke(miniPath);
   mctx.strokeStyle='rgba(244,245,247,.9)'; mctx.lineWidth=2.2*dpr/s; mctx.stroke(miniPath);
   mctx.fillStyle='#fff'; mctx.fillRect(PX[0]-8/s*dpr,PZ[0]-2/s*dpr,16/s*dpr,4/s*dpr);
+  if(ghostG.visible){ mctx.fillStyle='rgba(255,255,255,.6)'; mctx.beginPath(); mctx.arc(ghostG.position.x,ghostG.position.z,4*dpr/s,0,Math.PI*2); mctx.fill(); }
   mctx.fillStyle=bodyMat.color.getStyle(); mctx.strokeStyle='#111'; mctx.lineWidth=1.5*dpr/s;
   mctx.beginPath(); mctx.arc(car.x,car.z,5*dpr/s,0,Math.PI*2); mctx.fill(); mctx.stroke();
 }
@@ -1083,6 +1288,7 @@ function resize(){ const w=innerWidth, h=innerHeight; renderer.setSize(w,h); cam
 window.addEventListener('resize', resize); resize();
 const $id=id=>document.getElementById(id);
 const lapTxt=$id('lapTxt'), curTxt=$id('curTxt'), spdTxt=$id('spdTxt'), turnTxt=$id('turnTxt'), bestTxt=$id('bestTxt'), bestLbl=$id('bestLbl'), secTxt=$id('secTxt'),
+      ghostTxt=$id('ghostTxt'), ghostLbl=$id('ghostLbl'),
       gearTxt=$id('gearTxt'), gasBar=$id('gasBar'), brkBar=$id('brkBar'), clusterEl=$id('cluster'), warnEl=$id('warn'), carSwatch=$id('carSwatch'), revsEl=$id('revs');
 const REV_N=18, revLeds=[];
 for(let k=0;k<REV_N;k++){ const l=document.createElement('i'); if(k>=15) l.className='r'; else if(k>=10) l.className='a'; revsEl.appendChild(l); revLeds.push(l); }
@@ -1119,6 +1325,19 @@ function frame(now){
   skyDome.position.copy(carG.position);
   sun.target.position.copy(carG.position);
   sun.position.copy(carG.position).addScaledVector(SUN_DIR,260);
+  // Progreso de la vuelta (en puntos del trazado) y grabación para el fantasma
+  if(state==='race'){
+    let d=car.idx-progIdx; if(d>N/2) d-=N; if(d<-N/2) d+=N; prog+=d; progIdx=car.idx;
+    traceT+=dt;
+    if(traceT>=0.1){ traceT=0; trace.push([+(raceClock-lapStart).toFixed(2), +car.x.toFixed(2), +car.z.toFixed(2), +car.a.toFixed(3), prog]); }
+  }
+  if(ghostOn && ghost && (state==='race'||state==='countdown'||state==='done')){
+    const gs=ghostAt(state==='race' ? raceClock-lapStart : (state==='done' ? (frozen||0) : 0));
+    ghostG.position.set(gs[1],0,gs[2]); ghostG.rotation.y=-gs[3]-Math.PI/2;
+    const dd=Math.hypot(gs[1]-car.x, gs[2]-car.z);     // se desvanece al solaparse con tu coche
+    ghostG.visible = dd>3.2;
+    ghostMat.opacity = ghostDark.opacity = Math.min(0.34, (dd-3.2)*0.12);
+  } else ghostG.visible=false;
   const orbit = state==='turn', chase = chaseCam && (state==='countdown'||state==='race'||state==='done');
   cockpit.visible = !orbit && !chase;
   exterior.visible = orbit || chase;
@@ -1157,6 +1376,12 @@ function frame(now){
     const active = state==='race'||state==='countdown'||state==='done';
     audio.g.gain.setTargetAtTime(muted||!active?0:(0.035+(state==='race'?0.05*(car.gas||0):0)),t,0.08);
   }
+  // Retrovisores: la escena vista hacia atrás, sin la propia cabina ni recalcular sombras
+  if(mirrorRT && cockpit.visible && !attract && (quality==='alta' || (frameN&1))){
+    cockpit.visible=false; renderer.shadowMap.autoUpdate=false;
+    renderer.setRenderTarget(mirrorRT); renderer.render(scene, rearCam); renderer.setRenderTarget(null);
+    cockpit.visible=true; renderer.shadowMap.autoUpdate=true;
+  }
   renderer.render(scene,camera);
   // HUD
   const p=players[Math.min(current,players.length-1)];
@@ -1171,6 +1396,12 @@ function frame(now){
   turnTxt.textContent = Math.min(current+1,4)+'/4';
   const L=leader(); bestTxt.textContent = L?fmt(L.time):'–'; bestLbl.textContent = L?('Mejor: '+L.name):'Mejor';
   secTxt.textContent = sectionAt(car.idx);
+  if(!ghost){ ghostLbl.textContent='Fantasma'; ghostTxt.textContent='–'; ghostTxt.className=''; }
+  else if(state==='race' && ghostByProg && prog>20 && prog<ghostByProg.length){
+    const dlt=(raceClock-lapStart)-ghostByProg[prog];
+    ghostLbl.textContent='Fantasma: '+ghost.name; ghostTxt.textContent=(dlt>0?'+':'−')+Math.abs(dlt).toFixed(2);
+    ghostTxt.className = dlt>0 ? 'behind' : 'ahead';
+  } else { ghostLbl.textContent='Récord: '+ghost.name; ghostTxt.textContent=fmt(ghost.time); ghostTxt.className=''; }
   drawMini();
   requestAnimationFrame(frame);
 }

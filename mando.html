@@ -16,6 +16,10 @@ html,body{ height:100%; margin:0; background:var(--bg); color:var(--ink); font-f
 .badge{ display:inline-block; background:var(--accent); color:#fff; font-weight:800; letter-spacing:.08em; padding:3px 9px; border-radius:3px; font-size:13px; }
 h1{ font-size:30px; margin:10px 0 6px; line-height:1.1; }
 p{ color:var(--muted); margin:0 0 16px; line-height:1.45; }
+.roomIn{ font-size:34px; font-weight:900; letter-spacing:.25em; text-transform:uppercase; text-align:center; padding:12px; }
+details.adv{ margin-top:16px; background:var(--panel); border-radius:8px; padding:10px 12px; }
+details.adv summary{ cursor:pointer; font-weight:700; }
+.roomTag{ font-weight:800; font-size:13px; color:var(--yellow); letter-spacing:.08em; }
 label{ display:block; font-size:14px; color:var(--muted); margin:12px 0 4px; }
 input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:0; background:#fff6e0; color:#1c1c1c; -webkit-user-select:text; user-select:text; }
 .go{ width:100%; margin-top:20px; font-size:19px; font-weight:800; padding:15px; border:0; border-radius:10px; background:var(--accent); color:#fff; box-shadow:0 4px 0 #8f1420; }
@@ -60,22 +64,27 @@ input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:
   <span class="badge">IES SANJE</span>
   <h1>Mando móvil</h1>
   <p>Inclina el móvil en horizontal como un volante. Pulsa a la derecha para acelerar y a la izquierda para frenar.</p>
-  <label for="url">Broker (WebSocket seguro)</label>
-  <input id="url" value="wss://broker.hivemq.com:8884/mqtt" autocomplete="off" spellcheck="false">
-  <label for="user">Usuario del broker (opcional)</label>
-  <input id="user" placeholder="(vacío con HiveMQ)" autocomplete="off" autocapitalize="off" spellcheck="false">
-  <label for="pass">Contraseña (opcional)</label>
-  <input id="pass" type="password" autocomplete="off">
-  <label for="prefix">Prefijo de los temas</label>
-  <input id="prefix" value="iessanje/lemans" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <label for="room">Código de sala (lo ves en la pantalla del juego)</label>
+  <input id="room" class="roomIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="····">
   <button class="go" id="go">Conectar y empezar</button>
   <div class="msg" id="msg"></div>
-  <div class="tip">Con el broker público de HiveMQ deja el usuario y la contraseña vacíos. Usa el <b>mismo prefijo</b> que en el juego: si cada grupo pone uno distinto (por ejemplo <b>iessanje/lemans/grupo2</b>), no se mezclan los mandos. En iPhone te pedirá permiso para usar los sensores de movimiento: acéptalo.</div>
+  <details class="adv">
+    <summary>Opciones avanzadas</summary>
+    <label for="url">Broker (WebSocket seguro)</label>
+    <input id="url" value="wss://broker.hivemq.com:8884/mqtt" autocomplete="off" spellcheck="false">
+    <label for="prefix">Prefijo base de los temas</label>
+    <input id="prefix" value="iessanje/lemans" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label for="user">Usuario del broker (vacío con HiveMQ)</label>
+    <input id="user" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label for="pass">Contraseña (vacía con HiveMQ)</label>
+    <input id="pass" type="password" autocomplete="off">
+  </details>
+  <div class="tip">Si has llegado escaneando el QR del juego, el código de sala ya está puesto: solo pulsa el botón. Cada ordenador tiene su propia sala, así que los mandos de distintos grupos no se mezclan. En iPhone te pedirá permiso para usar los sensores de movimiento: acéptalo.</div>
 </div>
 
 <div id="pad" class="hidden">
   <div class="bar">
-    <span class="dot" id="dot" title="Conexión"></span>
+    <span class="dot" id="dot" title="Conexión"></span><span class="roomTag" id="roomTag"></span>
     <button class="sbtn start" id="bStart">SALIDA</button>
     <div class="wheelbox">
       <svg class="wheel" id="wheel" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="30" fill="none" stroke="#fff6e0" stroke-width="7"/><rect x="8" y="32" width="56" height="8" rx="3" fill="#fff6e0"/><rect x="32" y="36" width="8" height="26" rx="3" fill="#fff6e0"/><rect x="31" y="4" width="10" height="9" rx="2" fill="#e0342c"/></svg>
@@ -103,8 +112,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const isIOS = typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function';
 
 // Rellenar con lo guardado o con la URL (?user=movil@XXXX)
-try{ const s=JSON.parse(localStorage.getItem('mando-sanje')||'{}'); for(const k of ['url','user','pass','prefix']) if(s[k]) $(k).value=s[k]; }catch(e){}
-const qs=new URLSearchParams(location.search); for(const k of ['url','user','prefix']) if(qs.get(k)) $(k).value=qs.get(k);
+try{ const s=JSON.parse(localStorage.getItem('mando-sanje')||'{}'); for(const k of ['url','user','pass','prefix','room']) if(s[k]) $(k).value=s[k]; }catch(e){}
+const qs=new URLSearchParams(location.search);
+const qmap={sala:'room', broker:'url', prefijo:'prefix', url:'url', user:'user', prefix:'prefix'};
+for(const k in qmap) if(qs.get(k)) $(qmap[k]).value=qs.get(k);
+$('room').value=$('room').value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+$('room').addEventListener('input',()=>{ $('room').value=$('room').value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
 
 let client=null, prefix='iessanje/lemans', lastGame=-1e9, gameMsg='';
 const st={steer:0, gas:0, brake:0, hand:false};
@@ -113,9 +126,13 @@ try{ invert = localStorage.getItem('mando-sanje-inv')==='1'; }catch(e){}
 
 $('go').addEventListener('click', async ()=>{
   const url=$('url').value.trim(), user=$('user').value.trim(), pass=$('pass').value;
-  prefix=($('prefix').value.trim()||'iessanje/lemans').replace(/\/+$/,'');
+  const base=($('prefix').value.trim()||'iessanje/lemans').replace(/\/+$/,'');
+  const room=$('room').value.trim().toUpperCase();
+  if(!/^[A-Z0-9]{4}$/.test(room)){ $('msg').textContent='Escribe el código de sala de 4 letras que aparece en el juego.'; $('room').focus(); return; }
+  prefix=base+'/'+room;
+  $('roomTag').textContent=room;
   if(!url){ $('msg').textContent='Falta la dirección del broker.'; return; }
-  try{ localStorage.setItem('mando-sanje', JSON.stringify({url,user,pass,prefix})); }catch(e){}
+  try{ localStorage.setItem('mando-sanje', JSON.stringify({url,user,pass,prefix:base,room})); }catch(e){}
   // Permiso de sensores (iPhone) — tiene que ir dentro del toque
   try{ if(isIOS){ const r=await DeviceMotionEvent.requestPermission(); if(r!=='granted') $('msg').textContent='Sin permiso de movimiento: usa la barra de dirección.'; } }catch(e){}
   window.addEventListener('devicemotion', onMotion);
@@ -195,10 +212,12 @@ setInterval(()=>{
   // El juego emite telemetría continuamente: si llega, es que el juego está al otro lado
   const broker=!!(client && client.connected), seen=broker && performance.now()-lastGame<2000;
   $('dot').className='dot'+(seen?' on':(broker?' wait':''));
-  const txt=!client||seen?'':(broker?'Buscando el juego… Ábrelo en el ordenador y usa el prefijo '+prefix:'Sin conexión con el broker. Reintentando…');
+  const txt=!client||seen?'':(broker?'Buscando el juego… Ábrelo en el ordenador y comprueba que su sala es '+prefix.split('/').pop():'Sin conexión con el broker. Reintentando…');
   if(txt!==gameMsg){ gameMsg=txt; $('noGame').textContent=txt; $('noGame').classList.toggle('hidden',!txt); }
 },50);
-document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible'){ try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){} } });
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState==='hidden' && client && client.connected){ st.gas=0; st.brake=0; client.publish(prefix+'/control', JSON.stringify({steer:0,gas:0,brake:0,hand:0})); }
+  if(document.visibilityState==='visible'){ try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){} } });
 })();
 </script>
 </body>
