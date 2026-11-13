@@ -63,7 +63,7 @@ input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:
 <div id="setup">
   <span class="badge">IES SANJE</span>
   <h1>Mando móvil</h1>
-  <p>Inclina el móvil en horizontal como un volante. Pulsa a la derecha para acelerar y a la izquierda para frenar.</p>
+  <p>Sujeta el móvil en horizontal como un volante: gíralo para dirigir, inclínalo hacia delante para acelerar y hacia atrás para frenar. Los botones de la pantalla también funcionan.</p>
   <label for="room">Código de sala (lo ves en la pantalla del juego)</label>
   <input id="room" class="roomIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="····">
   <button class="go" id="go">Conectar y empezar</button>
@@ -93,12 +93,13 @@ input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:
     <div class="lights" id="lights"><b></b><b></b><b></b><b></b><b></b></div>
     <div class="spd"><span id="kmh">0</span> <small>km/h</small></div>
     <button class="sbtn" id="bCenter">CENTRAR</button>
-    <button class="sbtn" id="bInvert">⇄</button>
+    <button class="sbtn" id="bInvert" title="Invertir la dirección">⇄</button>
+    <button class="sbtn" id="bPitch" title="Invertir acelerador y freno">↕</button>
     <button class="sbtn hand" id="bHand">MANO</button>
   </div>
   <div class="zones">
-    <div class="zone brake" id="zBrake"><div class="fill" id="fBrake"></div><div class="hint">más arriba = más fuerte</div><span>FRENO</span></div>
-    <div class="zone gas" id="zGas"><div class="fill" id="fGas"></div><div class="hint">más arriba = más fuerte</div><span>GAS</span></div>
+    <div class="zone brake" id="zBrake"><div class="fill" id="fBrake"></div><div class="hint">inclina hacia atrás · o pulsa aquí</div><span>FRENO</span></div>
+    <div class="zone gas" id="zGas"><div class="fill" id="fGas"></div><div class="hint">inclina hacia delante · o pulsa aquí</div><span>GAS</span></div>
   </div>
   <div id="noGame" role="status" class="hidden"></div>
 </div>
@@ -109,7 +110,9 @@ input{ width:100%; font-size:17px; padding:11px 12px; border-radius:8px; border:
 (() => {
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const isIOS = typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function';
+// Chrome también tiene ya requestPermission: el permiso se pide donde exista, pero el iPhone se detecta aparte
+const needsPerm = typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function';
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
 
 // Rellenar con lo guardado o con la URL (?user=movil@XXXX)
 try{ const s=JSON.parse(localStorage.getItem('mando-sanje')||'{}'); for(const k of ['url','user','pass','prefix','room']) if(s[k]) $(k).value=s[k]; }catch(e){}
@@ -122,7 +125,9 @@ $('room').addEventListener('input',()=>{ $('room').value=$('room').value.toUpper
 let client=null, prefix='iessanje/lemans', lastGame=-1e9, gameMsg='';
 const st={steer:0, gas:0, brake:0, hand:false};
 let rawAngle=0, center=0, invert=false, hasSensor=false;
-try{ invert = localStorage.getItem('mando-sanje-inv')==='1'; }catch(e){}
+let rawPitch=0, centerPitch=0, invertPitch=false, needCal=false;
+const touch={gas:0, brake:0};
+try{ invert = localStorage.getItem('mando-sanje-inv')==='1'; invertPitch = localStorage.getItem('mando-sanje-invp')==='1'; }catch(e){}
 
 $('go').addEventListener('click', async ()=>{
   const url=$('url').value.trim(), user=$('user').value.trim(), pass=$('pass').value;
@@ -134,7 +139,8 @@ $('go').addEventListener('click', async ()=>{
   if(!url){ $('msg').textContent='Falta la dirección del broker.'; return; }
   try{ localStorage.setItem('mando-sanje', JSON.stringify({url,user,pass,prefix:base,room})); }catch(e){}
   // Permiso de sensores (iPhone) — tiene que ir dentro del toque
-  try{ if(isIOS){ const r=await DeviceMotionEvent.requestPermission(); if(r!=='granted') $('msg').textContent='Sin permiso de movimiento: usa la barra de dirección.'; } }catch(e){}
+  try{ if(needsPerm){ const r=await DeviceMotionEvent.requestPermission(); if(r!=='granted') $('msg').textContent='Sin permiso de movimiento: usa la barra de dirección.'; } }catch(e){}
+  needCal=true;                                   // la postura al conectar es la posición neutra
   window.addEventListener('devicemotion', onMotion);
   // Pantalla completa, horizontal y sin apagarse
   try{ await document.documentElement.requestFullscreen(); }catch(e){}
@@ -172,14 +178,20 @@ function onMotion(e){
   let a = Math.atan2(-sx, sy)*180/Math.PI;     // grados; en iPhone el signo viene al revés
   if(isIOS) a = Math.atan2(sx, -sy)*180/Math.PI;
   rawAngle = a;
+  // Inclinación adelante/atrás: cuánto mira la pantalla hacia el cielo (componente z de la gravedad)
+  let pz = Math.atan2(g.z||0, Math.hypot(sx,sy))*180/Math.PI;
+  if(isIOS) pz = -pz;                          // en iPhone los ejes vienen con el signo contrario
+  rawPitch = pz;
+  if(needCal){ needCal=false; center=rawAngle; centerPitch=rawPitch; }
 }
-$('bCenter').addEventListener('click',()=>{ center=rawAngle; vib(40); });
+$('bCenter').addEventListener('click',()=>{ center=rawAngle; centerPitch=rawPitch; vib(40); });
+$('bPitch').addEventListener('click',()=>{ invertPitch=!invertPitch; try{ localStorage.setItem('mando-sanje-invp',invertPitch?'1':'0'); }catch(e){} vib(40); });
 $('bInvert').addEventListener('click',()=>{ invert=!invert; try{ localStorage.setItem('mando-sanje-inv',invert?'1':'0'); }catch(e){} vib(40); });
 
 // Pedales táctiles: la altura del dedo marca la fuerza
 function zone(el, fill, key){
   const active=new Map();
-  const upd=()=>{ let v=0; const r=el.getBoundingClientRect(); for(const y of active.values()) v=Math.max(v, clamp(0.35+0.65*(1-(y-r.top)/r.height),0.35,1)); st[key]=active.size?+v.toFixed(2):0; fill.style.height=(st[key]*100)+'%'; };
+  const upd=()=>{ let v=0; const r=el.getBoundingClientRect(); for(const y of active.values()) v=Math.max(v, clamp(0.35+0.65*(1-(y-r.top)/r.height),0.35,1)); touch[key]=active.size?+v.toFixed(2):0; };
   el.addEventListener('pointerdown',e=>{ e.preventDefault(); el.setPointerCapture(e.pointerId); active.set(e.pointerId,e.clientY); upd(); vib(15); });
   el.addEventListener('pointermove',e=>{ if(active.has(e.pointerId)){ active.set(e.pointerId,e.clientY); upd(); } });
   const end=e=>{ active.delete(e.pointerId); upd(); };
@@ -206,6 +218,16 @@ setInterval(()=>{
     const MAX=35, DZ=2.5;
     st.steer = Math.abs(d)<DZ ? 0 : clamp((d-Math.sign(d)*DZ)/(MAX-DZ),-1,1);
   } else st.steer=0;
+  // Pedales: el mayor entre la inclinación y el botón táctil
+  let tiltGas=0, tiltBrake=0;
+  if(hasSensor){
+    let p=rawPitch-centerPitch; if(invertPitch) p=-p;
+    const DZ=7;                                  // zona muerta para no acelerar sin querer
+    tiltGas   = p> DZ ? clamp((p-DZ)/25,0,1) : 0;   // a 32° hacia delante, gas a fondo
+    tiltBrake = p<-DZ ? clamp((-p-DZ)/20,0,1) : 0;  // a 27° hacia atrás, freno a fondo
+  }
+  st.gas=+Math.max(touch.gas,tiltGas).toFixed(2); st.brake=+Math.max(touch.brake,tiltBrake).toFixed(2);
+  $('fGas').style.height=(st.gas*100)+'%'; $('fBrake').style.height=(st.brake*100)+'%';
   $('wheel').style.transform=`rotate(${st.steer*110}deg)`;
   $('knob').style.left=((st.steer+1)/2*100)+'%';
   if(client && client.connected) client.publish(prefix+'/control', JSON.stringify({steer:+st.steer.toFixed(3), gas:st.gas, brake:st.brake, hand:st.hand?1:0}));
@@ -216,7 +238,7 @@ setInterval(()=>{
   if(txt!==gameMsg){ gameMsg=txt; $('noGame').textContent=txt; $('noGame').classList.toggle('hidden',!txt); }
 },50);
 document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState==='hidden' && client && client.connected){ st.gas=0; st.brake=0; client.publish(prefix+'/control', JSON.stringify({steer:0,gas:0,brake:0,hand:0})); }
+  if(document.visibilityState==='hidden' && client && client.connected){ st.gas=0; st.brake=0; touch.gas=0; touch.brake=0; client.publish(prefix+'/control', JSON.stringify({steer:0,gas:0,brake:0,hand:0})); }
   if(document.visibilityState==='visible'){ try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){} } });
 })();
 </script>
